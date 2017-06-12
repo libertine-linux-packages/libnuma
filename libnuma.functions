@@ -2,56 +2,96 @@
 # Copyright © 2016 The developers of libertine linux's package libnuma. See the COPYRIGHT file in the top-level directory of this distribution and at https://raw.githubusercontent.com/libertine-linux-packages/libnuma/master/COPYRIGHT.
 
 
-variant=upstream
 
-depends build_ccache
-build_needs ccache
+case "$package" in
+	
+	libnuma)
+		variant=upstream
 
-depends build_gnumake
-build_needs make
+		depends build_ccache
+		build_needs ccache
 
-depends build_slibtool
-build_needs clibtool-static libtoolize realpath
+		depends build_gnumake
+		build_needs make
 
-depends build_perl
-build_needs perl
+		depends build_slibtool
+		build_needs clibtool-static libtoolize realpath
 
-depends build_autoconf
-build_needs autoconf autoheader autom4te autoreconf autoscan autoupdate ifnames
+		depends build_perl
+		build_needs perl
 
-depends build_automake
-build_needs automake aclocal
+		depends build_autoconf
+		build_needs autoconf autoheader autom4te autoreconf autoscan autoupdate ifnames
 
-depends build_gnum4
-build_needs m4
+		depends build_automake
+		build_needs automake aclocal
 
-depends build_musl_cross_make_host
-build_needs "$libertine_host"-cc "$libertine_host"-gcc "$libertine_host"-ar "$libertine_host"-ld "$libertine_host"-ranlib "$libertine_host"-strip
+		depends build_gnum4
+		build_needs m4
 
-depends build_busybox
-build_needs sort dirname install expr ls sleep
+		depends build_musl_cross_make_host
+		build_needs "$libertine_host"-cc "$libertine_host"-gcc "$libertine_host"-ar "$libertine_host"-ld "$libertine_host"-ranlib "$libertine_host"-strip
+
+		depends build_busybox
+		build_needs sort dirname install expr ls sleep
 
 
-build_needs sed rm sh ln
-libertine_compile_libnuma()
-{
-	pushd "$(libertine_public_sourcePath)"
+		build_needs sed rm sh ln
+		libertine_compile_libnuma()
+		{
+			pushd "$(libertine_public_sourcePath)"
+				
+				libtoolize --install --force --verbose
+				autoreconf --install --force --verbose
 		
-		# Disable documentation generation
-		#sed -i -e 's/SUBDIRS = src man doc/SUBDIRS = src/g' Makefile.am
-		#sed -i -e 's; man/Makefile;;g' -e 's; doc/Makefile;;g' configure.ac
-		#rm -rf man doc
+				libertine_public_autoconf_modernAutoconfConfigure \
+					--enable-fast-install --disable-silent-rules --disable-dependency-tracking \
+					--disable-shared --enable-static
 		
-		libtoolize --install --force --verbose
-		autoreconf --install --force --verbose
+				libertine_public_make
 		
-		libertine_public_autoconf_modernAutoconfConfigure \
-			--enable-fast-install --disable-silent-rules --disable-dependency-tracking \
-			--disable-shared --enable-static
+				libertine_public_make DESTDIR="$(libertine_public_outputHostSysrootPath)" install
 		
-		libertine_public_make
+			popd
+		}
+	;;
+	
+	libnuma_numactl)
 		
-		libertine_public_make DESTDIR="$(libertine_public_outputHostSysrootPath)" install
+		variant=empty
 		
-	popd
-}
+		depends libnuma
+
+		build_needs mkdir cp
+		libertine_compile_libnuma_numactl()
+		{
+			local destinationFolderPath="$(libertine_public_outputInitramfsPath)"/usr/bin
+			mkdir -m 0755 -p "$destinationFolderPath"
+			
+			cp "$(libertine_public_outputHostSysrootPath libnuma)"/usr/bin/numactl "$destinationFolderPath"
+			libertine_public_stripAndSecureBinary "$destinationFolderPath"/numactl
+		}
+	;;
+	
+	libnuma_extra)
+	
+		variant=empty
+		
+		depends libnuma
+
+		build_needs mkdir cp
+		libertine_compile_libnuma_extra()
+		{
+			local destinationFolderPath="$(libertine_public_outputInitramfsPath)"/usr/bin
+			mkdir -m 0755 -p "$destinationFolderPath"
+			
+			local binary
+			for binary in memhog migratepages migspeed numastat
+			do
+				cp "$(libertine_public_outputHostSysrootPath libnuma)"/usr/bin/"$binary" "$destinationFolderPath"
+				libertine_public_stripAndSecureBinary "$destinationFolderPath"/"$binary"
+			done
+		}
+	;;
+	
+esac
