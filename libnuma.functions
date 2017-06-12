@@ -45,7 +45,9 @@ libertine_compile_libnuma()
 		libtoolize --install --force --verbose
 		autoreconf --install --force --verbose
 		
-		libertine_public_autoconf_modernAutoconfConfigure --help
+		libertine_public_autoconf_modernAutoconfConfigure \
+			--enable-fast-install --disable-silent-rules --disable-dependency-tracking \
+			--disable-shared --enable-static
 		
 		libertine_public_make
 		
