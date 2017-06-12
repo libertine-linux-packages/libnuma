@@ -61,6 +61,12 @@ case "$package" in
 		variant=empty
 		
 		depends libnuma
+	
+		depends build_musl_cross_make_host
+		build_needs "$libertine_host"-strip
+
+		depends build_paxctl
+		build_needs paxctl
 
 		build_needs mkdir cp
 		libertine_compile_libnuma_numactl()
@@ -78,6 +84,12 @@ case "$package" in
 		variant=empty
 		
 		depends libnuma
+	
+		depends build_musl_cross_make_host
+		build_needs "$libertine_host"-strip
+
+		depends build_paxctl
+		build_needs paxctl
 
 		build_needs mkdir cp
 		libertine_compile_libnuma_extra()
