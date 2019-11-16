@@ -1,3 +1,5 @@
 [submodule "upstream"]
 	path = upstream
-	url = https://github.com/numactl/numactl.git
+	url = https://github.com/libertine-linux-clones/numactl.git
+	branch = master
+	libertine-linux-upstream = https://github.com/numactl/numactl.git
